@@ -1,0 +1,25 @@
+{
+  "name": "pokemon-application",
+  "version": "1.0.0",
+  "description": "a server application for interacting with pokemon cards",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "npx nodemon server.js"
+  },
+  "author": "",
+  "contributors": [
+    "Jacqueline Molina",
+    "Gabriel Espejel"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^5.4.0",
+    "pokemon-api": "file:../pokemon-api"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
