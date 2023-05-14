@@ -16,5 +16,5 @@ app.use('/search', search);
 // start the server
 app.listen(port, async () => {
     console.log(`Server is listening on port ${port}`);
-    // await mongo.connect();
+    await mongo.connect();
 });
