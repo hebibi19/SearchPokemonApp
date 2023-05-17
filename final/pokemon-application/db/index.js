@@ -53,14 +53,60 @@ const mongo = () => {
     /**
      *  add in code for updating search history object
      */
-    async function update( ) {
+    async function update(collectionName, pokemon, data) {
+        try {
+            const collection = db.collection(collectionName);
 
+            // if searchterm exists in mongodb and if 'selections' exists in that search
+            if (await collection.count({searchTerm: pokemon, selections:{$exists:true}}) == 1) {
+                // add new data into the selections array
+                await collection.updateOne(
+                    {searchTerm: pokemon, selections:{$exists:true}},
+                    // push in data to the back of the array
+                    {$push: {selections: data}}
+                );
+            }
+            else {
+                // if 'selections' does not exist in the search, create a new 'selections' field and add data into it
+                await collection.updateOne(
+                    {searchTerm: pokemon, selections:{$exists:false}},
+                    // add in a new array 'selections' containing the data
+                    {$set: {selections:[data]}}
+                );
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+
+    /**
+     * finds the history for one specfifc searchTerm or returns all history in the Results database
+     */
+    async function find(collectionName, pokemon='') {
+        try {
+            const collection = db.collection(collectionName);
+
+            if (pokemon) {
+                // if a pokemon name was entered, find that entry and return it
+                return await collection.find({ searchTerm: pokemon }).next();
+            }
+            else {
+                // if there was no specification, return all results
+                return await collection.find({}).toArray();
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return {
         connect,
         save,
-        // update,
+        update,
+        find
     };
 };
 
