@@ -13,34 +13,6 @@ const _chooseOption = async (options) => {
     });
 };
 
-/**
- * Passes in metadata to functions
- */
-router.use((req, res, next) => {
-    const {originalUrl, query } = req;
-    // contains the specifics of what the first searching url looks like
-    const firstURL = originalUrl.split('=').filter((str) => str !== '');
-    const [first, second] = firstURL;
-
-    if (firstURL.length === 2 && first === '/search?pokemon' && second !== undefined) {
-        query.metadata = {
-            lastSearched: new Date()
-        };
-    }
-
-    // contains the specifics of what the getting info for a specfic card url looks like
-    const secondURL = originalUrl.split('/').filter((str) => str !== '');
-    const [one, two, three] = secondURL;
-
-    if (secondURL.length === 3 && one === 'search' && two !== undefined && three != undefined) {
-        query.metadata = {
-            // add in your metadata here
-        };
-    }
-
-    // this middleware is done processing and move on to the next thing in line
-    next();
-});
 
 /**
  * ENDPOINT GET /search
@@ -51,7 +23,7 @@ router.use((req, res, next) => {
 router.get('/', async (req, res) => {
     try {
         const { query } = req;
-        const { pageSize = 10, pokemon = '', metadata } = query;
+        const { pageSize = 10, pokemon = ''} = query;
 
         // searches for the pokemon
         const searchOptions = await pokemonAPI.searchByName(pokemon, pageSize);
@@ -73,7 +45,7 @@ router.get('/', async (req, res) => {
         res.json(results);
 
         // saves to MongoDB
-        database.save('Results', pokemon, {searchTerm:pokemon, pageSize, lastSearched:metadata.lastSearched});
+        database.save('Results', pokemon, {searchTerm:pokemon, pageSize, lastSearched: new Date()});
 
     } catch (error) {
         res.status(500).json(error.toString());
@@ -95,7 +67,7 @@ router.get('/:id/details', async (req, res) => {
         // contains the unique identifier
         const { id } = params;
         // contains the metadata
-        const { metadata } = query;
+        const { pokemon = '' } = query;
 
         // returns the info pertaining to a specific pokemon card
         const finalOption = await pokemonAPI.getInfo(id);
@@ -103,9 +75,15 @@ router.get('/:id/details', async (req, res) => {
         // displays the information on the screen
         res.json(finalOption);
 
-        /**
-         * add in code for updating the object in MongoDB 
-         */
+        // data going into the updated document
+        const selections =
+            {
+                id: id,
+                display: finalOption
+            };
+
+        // updates the database with new information
+        database.update('Results', pokemon, selections);
 
 
     } catch (error) {
